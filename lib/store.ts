@@ -116,7 +116,7 @@ export function logout() {
   localStorage.removeItem(sessionKey);
 }
 
-export function register(name: string, email: string, password: string, role: Exclude<Role, "ADMIN">): User {
+export function register(name: string, email: string, password: string, role: Role): User {
   const state = loadState();
   if (state.users.some((user) => user.email.toLowerCase() === email.toLowerCase())) {
     throw new Error("Email already exists");

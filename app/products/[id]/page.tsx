@@ -15,7 +15,7 @@ export default function ProductDetailPage() {
   const category = state?.categories.find((item) => item.id === product?.categoryId);
 
   return (
-    <Protected role="USER">
+    <Protected role={["SELLER", "USER"]}>
       <Shell>
         {!product ? (
           <p>Product not found.</p>

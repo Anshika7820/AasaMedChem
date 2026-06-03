@@ -29,7 +29,7 @@ export default function ProductsPage() {
   }, [state, search, category, unit, sort]);
 
   return (
-    <Protected role="USER">
+    <Protected role={["SELLER", "USER"]}>
       <Shell>
         <h1 className="text-3xl font-black">Products</h1>
         <div className="mt-5 grid gap-3 rounded-lg border border-line bg-white p-4 md:grid-cols-4">

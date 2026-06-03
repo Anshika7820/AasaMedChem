@@ -31,7 +31,7 @@ export default function LoginPage() {
       <main className="mx-auto flex min-h-[calc(100vh-70px)] max-w-md items-center px-4 py-10">
         <Card className="w-full">
           <h1 className="text-2xl font-black">Login</h1>
-          <p className="mt-2 text-sm text-slate-600">Use admin or seller demo credentials.</p>
+          <p className="mt-2 text-sm text-slate-600">Use admin, seller, or user demo credentials.</p>
           <form className="mt-6 space-y-4" onSubmit={submit}>
             <label className="block text-sm font-semibold">Email
               <input className="mt-1 w-full rounded-md border border-line px-3 py-2" value={email} onChange={(event) => setEmail(event.target.value)} />
@@ -43,7 +43,11 @@ export default function LoginPage() {
             <Button className="w-full">Login</Button>
           </form>
           <div className="mt-4 rounded-md bg-slate-50 p-3 text-sm text-slate-600">
+            Admin demo: admin@aasamedchem.com / admin123
+            <br />
             Seller demo: seller@test.com / seller123
+            <br />
+            User demo: user@test.com / user123
           </div>
           <p className="mt-4 text-sm">No account? <Link className="font-bold text-brand" href="/register">Register</Link></p>
         </Card>

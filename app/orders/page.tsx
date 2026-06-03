@@ -10,7 +10,7 @@ export default function OrdersPage() {
   const { state, user } = useAppState();
   const orders = state?.orders.filter((order) => order.userId === user?.id) ?? [];
   return (
-    <Protected role="USER">
+    <Protected role={["SELLER", "USER"]}>
       <Shell>
         <h1 className="text-3xl font-black">My Orders</h1>
         <section className="mt-6 rounded-lg border border-line bg-white p-5">

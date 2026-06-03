@@ -34,7 +34,7 @@ export default function CartPage() {
   };
 
   return (
-    <Protected role="USER">
+    <Protected role={["SELLER", "USER"]}>
       <Shell>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-3xl font-black">Cart</h1>

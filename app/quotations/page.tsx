@@ -10,7 +10,7 @@ export default function QuotationsPage() {
   const { state, user } = useAppState();
   const quotations = state?.quotations.filter((quotation) => quotation.userId === user?.id) ?? [];
   return (
-    <Protected role="USER">
+    <Protected role={["SELLER", "USER"]}>
       <Shell>
         <h1 className="text-3xl font-black">My Quotations</h1>
         <section className="mt-6 rounded-lg border border-line bg-white p-5">

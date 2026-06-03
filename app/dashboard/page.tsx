@@ -15,11 +15,11 @@ export default function DashboardPage() {
   const quotations = state?.quotations.filter((quotation) => quotation.userId === user?.id) ?? [];
 
   return (
-    <Protected role="USER">
+    <Protected role={["SELLER", "USER"]}>
       <Shell>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-black">Seller Dashboard</h1>
+            <h1 className="text-3xl font-black">Seller / User Dashboard</h1>
             <p className="mt-1 text-slate-600">Search products, calculate pricing, and place orders.</p>
           </div>
           <Link href="/products"><Button>Browse Products</Button></Link>

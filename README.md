@@ -203,7 +203,7 @@ npm run build
 5. Keep install command as:
 
 ```bash
-npm install
+npm ci
 ```
 
 6. Deploy.
