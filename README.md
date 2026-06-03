@@ -1,23 +1,50 @@
 # AasaMedChem Inventory & Order Management System
 
-A full-stack style inventory, quotation, and order management project for a medchem/chemical product assignment.
+A Next.js inventory, quotation, and order management app for medchem and chemical products.
 
-The current app is demo-ready and works immediately in the browser using seeded local storage. It also includes a Prisma MongoDB schema so the same data model can be connected to MongoDB Atlas for production.
+## Current State
 
-## Features
+This repository is a working browser demo. Data is currently persisted in `localStorage`, so the app runs without a real backend database during local development and build verification.
 
-- Admin login and seller login/register
-- Role-based dashboards
-- Product create, edit, and soft delete
-- Inventory page with stock value calculation
-- Product search, category filter, unit type filter, and sorting
-- Live unit conversion and price calculation
-- Cart flow
+The repo also contains a Prisma schema that documents the data model for a production database. The hackathon brief asks for Neon PostgreSQL, but the current codebase is not yet wired to Neon. That is the main gap to close before final submission.
+
+## Feature Map
+
+### Public and auth flow
+
+- Landing page with product-focused hero content
+- Login page
+- Seller registration page
+- Demo credentials for Admin, Seller, and User roles
+
+### Seller/User features
+
+- Browse products
+- Search and filter products
+- View product details
+- Add products to cart
+- Enter quantities in supported units
+- See converted quantity and calculated price
 - Place orders
 - Request quotations
-- Admin order and quotation status management
-- User order and quotation history
-- Dashboard cards and simple category-wise inventory bars
+- View order and quotation history
+- Access a role-protected dashboard
+
+### Admin features
+
+- Admin dashboard with summary metrics
+- Create, edit, and soft-delete products
+- View inventory and inventory value
+- View and update incoming orders
+- View and update quotations
+- View user list and roles
+
+### Shared system behavior
+
+- Role-based navigation
+- Protected routes for Admin, Seller, and User views
+- Unit conversion for grams, kilograms, milliliters, liters, and items
+- INR price formatting in the UI
 
 ## Demo Credentials
 
@@ -35,84 +62,81 @@ Email: seller@test.com
 Password: seller123
 ```
 
+User:
+
+```txt
+Email: user@test.com
+Password: user123
+```
+
 ## Tech Stack
 
 - Next.js 15 App Router
+- React 19
 - TypeScript
 - Tailwind CSS
 - Prisma ORM schema
-- MongoDB Atlas ready
-- Zod validation helpers
+- Zod for validation helpers
 - lucide-react icons
 
-## Unit Conversion Strategy
+## Architecture
 
-This is the most important assignment requirement.
+Frontend pages live in `app/` and use reusable UI components from `components/`. The app uses a shared client-side store in `lib/store.ts` and a state hook in `lib/useAppState.ts` to keep demo data in sync across pages.
 
-All stock and order quantities are converted into base units before storage and pricing.
+Database access is modeled through Prisma in `prisma/schema.prisma`, and `lib/db.ts` creates a singleton Prisma client. In the current demo, the API routes do not yet read from the database; they mainly serve as placeholders while the browser store powers the app.
 
-Weight:
+## Authentication and Roles
 
-```txt
-Base unit: g
-1 kg = 1000 g
-1 g = 1 g
-```
+Authentication is currently handled on the client with browser storage. A session key stores the logged-in user id, and the `Protected` component redirects unauthenticated users to `/login`. It also checks role access and sends Admin and Seller/User accounts to their matching dashboards.
 
-Volume:
+Important note: passwords are not hashed yet because the current demo auth is local-storage based. For a production hackathon submission, this should be moved to server-side auth with hashed passwords and secure cookies or tokens.
 
-```txt
-Base unit: mL
-1 L = 1000 mL
-1 mL = 1 mL
-```
+## Unit Storage and Conversion Strategy
 
-Count:
+The app stores quantities in a canonical base unit so calculations stay consistent:
 
-```txt
-Base unit: item
-No conversion required
-```
+- Weight products use grams as the base unit
+- Volume products use milliliters as the base unit
+- Count-based products use item as the base unit
 
-Prices are stored per base unit.
+Conversion rules:
+
+- `1 kg = 1000 g`
+- `1 L = 1000 mL`
+- `1 item = 1 item`
+
+Conversions are applied before pricing and before saving the converted quantity to the order or quotation item.
 
 Example:
 
 ```txt
-Product: Ethanol
 Base unit: mL
 Price: Rs. 0.5 per mL
-
 User enters: 2 L
-Converted quantity: 2 x 1000 = 2000 mL
-Total price: 2000 x 0.5 = Rs. 1000
+Converted quantity: 2000 mL
+Total price: Rs. 1000
 ```
 
-The conversion functions are in `lib/conversion.ts`.
+The conversion helpers are in `lib/conversion.ts`.
 
-## Decimal Precision
+## Data Types and Precision
 
-Prisma's MongoDB connector does not support the `Decimal` type directly, so the MongoDB schema stores high-precision numeric values as decimal strings:
+The current Prisma schema stores quantities and prices as strings for precision in the demo model:
 
 ```prisma
 stockQuantity String
 pricePerBaseUnit String
 totalAmount String
+quantityEntered String
+convertedQuantity String
+amount String
 ```
 
-Examples:
-
-```txt
-"50000.0000000000"
-"0.8000000000"
-"1600.0000000000"
-```
-
-This avoids floating-point rounding problems. In the UI/demo layer, calculations are done with numbers for speed and simplicity. In a production MongoDB API, parse these strings with `decimal.js` before calculation and save the result back as a string.
+This is useful for preserving precision in the model, but the demo store currently uses JavaScript numbers in `lib/store.ts` for quick calculations. If you move this to Neon PostgreSQL, the recommended production choice is PostgreSQL `NUMERIC` for quantities, rates, and totals.
 
 ## Database Models
 
-The schema contains:
+The schema defines:
 
 - User
 - Category
@@ -124,23 +148,7 @@ The schema contains:
 
 See `prisma/schema.prisma`.
 
-## Simple Viva Explanation
-
-This project has two roles:
-
-- Admin manages products, stock, inventory, users, orders, and quotations.
-- Seller searches products, selects quantity/unit, gets automatic conversion and price, then places an order or quotation.
-
-The main logic is unit conversion:
-
-- Weight is stored in grams.
-- Volume is stored in milliliters.
-- Count is stored as items.
-- Price is calculated after converting the entered quantity into the base unit.
-
-The current deployed demo stores data in browser local storage so all pages work without a backend server setup. The MongoDB Prisma schema is included for connecting the same models to MongoDB Atlas.
-
-## Run Locally
+## Local Development
 
 Install dependencies:
 
@@ -148,7 +156,7 @@ Install dependencies:
 npm install
 ```
 
-Start development server:
+Start the development server:
 
 ```bash
 npm run dev
@@ -160,78 +168,33 @@ Open:
 http://localhost:3000
 ```
 
-## Connect MongoDB Atlas
+## Current Validation
 
-Create a free MongoDB Atlas cluster and copy the connection string into `.env`:
-
-```env
-DATABASE_URL="mongodb+srv://username:password@cluster.mongodb.net/aasamedchem?retryWrites=true&w=majority"
-NEXTAUTH_SECRET="your-secret"
-NEXTAUTH_URL="http://localhost:3000"
-```
-
-Generate Prisma client:
-
-```bash
-npx prisma generate
-```
-
-MongoDB with Prisma does not use SQL migrations like PostgreSQL. For MongoDB, use:
-
-```bash
-npx prisma db push
-```
-
-## Fast Vercel Hosting Steps
-
-1. Push this project to GitHub.
-2. Open Vercel and import the GitHub repository.
-3. Add environment variables:
-
-```env
-DATABASE_URL="mongodb+srv://username:password@cluster.mongodb.net/aasamedchem?retryWrites=true&w=majority"
-NEXTAUTH_SECRET="your-long-random-secret"
-NEXTAUTH_URL="https://your-vercel-app.vercel.app"
-```
-
-4. Keep build command as:
+The project compiles successfully with:
 
 ```bash
 npm run build
 ```
 
-5. Keep install command as:
+I also checked linting, but `next lint` originally opened an ESLint setup prompt because the repo did not have an ESLint config. The included `.eslintrc.json` fixes that so linting runs non-interactively.
 
-```bash
-npm ci
-```
+## Deployment Notes
 
-6. Deploy.
+The app can be deployed to Vercel as a browser demo right now because it is static-client driven.
 
-## Deployment
-
-Deploy on Vercel.
-
-Add these environment variables in Vercel:
+For the hackathon brief, the next step is to replace the browser store with Neon PostgreSQL-backed Prisma queries, then configure these environment variables in Vercel:
 
 ```env
-DATABASE_URL
-NEXTAUTH_SECRET
-NEXTAUTH_URL
+DATABASE_URL="your-neon-postgres-connection-string"
 ```
 
-Never commit real secrets.
+If you keep the current demo architecture, deployment will work as a browser demo, but it will not meet the Neon PostgreSQL requirement.
 
-## Git Commit Plan
+## README Summary for Submission
 
-Recommended commits:
-
-```txt
-Initial Next.js setup
-Added Prisma schema and database models
-Added unit conversion logic
-Built seller product and cart flow
-Implemented order and quotation management
-Built admin dashboard and inventory pages
-Added README and deployment guide
-```
+- Frontend: Next.js pages and reusable components
+- Backend: Next.js route handlers plus a Prisma client stub
+- Database: demo localStorage today, Prisma schema ready for a real database
+- Auth: client-side session + role-based route protection
+- Conversion: all quantities normalize to a base unit before pricing
+- Deployment: Vercel-ready build, but Neon/Postgres integration still needs to be completed for full assignment compliance

@@ -1,14 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useAppState } from "@/lib/useAppState";
 import type { Role } from "@/lib/types";
 
 export function Protected({ children, role }: { children: React.ReactNode; role?: Role | Role[] }) {
   const router = useRouter();
   const { user } = useAppState();
-  const allowedRoles = Array.isArray(role) ? role : role ? [role] : [];
+  const allowedRoles = useMemo(() => (Array.isArray(role) ? role : role ? [role] : []), [role]);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
