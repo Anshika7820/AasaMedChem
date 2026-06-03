@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+
+  orders     Order[]
+  quotations Quotation[]
+}
+
+enum Role {
+  ADMIN
+  SELLER
+  USER
+}
+
+model Category {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  name        String    @unique
+  description String?
+  products    Product[]
+}
+
+model Product {
+  id               String    @id @default(auto()) @map("_id") @db.ObjectId
+  name             String
+  sku              String    @unique
+  description      String?
+  categoryId       String?   @db.ObjectId
+  category         Category? @relation(fields: [categoryId], references: [id])
+  baseUnit         BaseUnit
+  /// Stored as a decimal string for MongoDB precision, for example "50000.0000000000".
+  stockQuantity    String
+  /// Stored as a decimal string for MongoDB precision, for example "0.8000000000".
+  pricePerBaseUnit String
+  isDeleted        Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  orderItems     OrderItem[]
+  quotationItems QuotationItem[]
+}
+
+enum BaseUnit {
+  g
+  mL
+  item
+}
+
+model Order {
+  id          String      @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String      @db.ObjectId
+  user        User        @relation(fields: [userId], references: [id])
+  totalAmount String
+  status      OrderStatus @default(PENDING)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  items OrderItem[]
+}
+
+enum OrderStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+}
+
+model OrderItem {
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  orderId           String  @db.ObjectId
+  order             Order   @relation(fields: [orderId], references: [id])
+  productId         String  @db.ObjectId
+  product           Product @relation(fields: [productId], references: [id])
+  quantityEntered   String
+  unitEntered       String
+  convertedQuantity String
+  amount            String
+}
+
+model Quotation {
+  id          String          @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String          @db.ObjectId
+  user        User            @relation(fields: [userId], references: [id])
+  totalAmount String
+  status      QuotationStatus @default(REQUESTED)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  items QuotationItem[]
+}
+
+enum QuotationStatus {
+  REQUESTED
+  APPROVED
+  REJECTED
+}
+
+model QuotationItem {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  quotationId       String    @db.ObjectId
+  quotation         Quotation @relation(fields: [quotationId], references: [id])
+  productId         String    @db.ObjectId
+  product           Product   @relation(fields: [productId], references: [id])
+  quantityEntered   String
+  unitEntered       String
+  convertedQuantity String
+  amount            String
+}
